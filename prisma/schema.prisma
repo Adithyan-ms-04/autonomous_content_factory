@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model CampaignWorkflow {
+  id               String          @id
+  sourceDocument   SourceDocument  @relation(fields: [sourceDocumentId], references: [id])
+  sourceDocumentId String          @unique
+  factSheet        FactSheet?
+  campaign         CampaignOutput?
+  agentStatuses    AgentStatus[]
+  messages         AgentMessage[]
+  currentStep      String          // 'upload' | 'research' | 'copywrite' | 'review' | 'complete'
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model SourceDocument {
+  id               String            @id
+  content          String
+  sourceUrl        String?
+  title            String?
+  uploadedAt       DateTime          @default(now())
+  workflow         CampaignWorkflow?
+}
+
+model FactSheet {
+  id                  String           @id
+  workflow            CampaignWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId          String           @unique
+  coreFeatures        String           // JSON stringified array
+  technicalSpecs      String           // JSON stringified record
+  targetAudience      String
+  valueProposition    String
+  ambiguousStatements String           // JSON stringified array
+  createdAt           DateTime         @default(now())
+}
+
+model ContentPiece {
+  id              String          @id
+  type            String          // 'blog' | 'social' | 'email'
+  content         String
+  tone            String
+  status          String          // 'draft' | 'approved' | 'rejected'
+  rejectionReason String?
+  campaignOutput  CampaignOutput? @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId      String?
+}
+
+model CampaignOutput {
+  id             String           @id
+  workflow       CampaignWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId     String           @unique
+  status         String           // 'generating' | 'reviewing' | 'completed'
+  contentPieces  ContentPiece[]
+  createdAt      DateTime         @default(now())
+}
+
+model AgentStatus {
+  id          String           @id @default(uuid())
+  workflow    CampaignWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId  String
+  role        String           // 'researcher' | 'copywriter' | 'editor'
+  state       String           // 'idle' | 'thinking' | 'typing' | 'reviewing' | 'completed' | 'error'
+  currentTask String?
+  
+  @@unique([workflowId, role])
+}
+
+model AgentMessage {
+  id         String           @id
+  workflow   CampaignWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String
+  from       String
+  to         String
+  message    String
+  timestamp  DateTime         @default(now())
+  type       String           // 'info' | 'action' | 'correction' | 'approval' | 'rejection'
+}
