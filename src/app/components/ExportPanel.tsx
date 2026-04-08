@@ -85,29 +85,29 @@ ${campaign.emailTeaser.content}
           Download Campaign Kit
         </button>
 
-        {/* Individual Copy Buttons */}
+        {/* Individual Preview Buttons */}
         {campaign && (
           <div className="grid grid-cols-3 gap-2">
             <button
-              onClick={() => copyToClipboard(campaign.blogPost.content, 'Blog post')}
-              className="flex flex-col items-center gap-1 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => window.open(`/preview/blog/${workflow.id}`, '_blank')}
+              className="flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-200 dark:hover:border-blue-800 transition-all group"
             >
-              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <span className="text-xs font-medium">Blog</span>
+              <FileText className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Preview Blog</span>
             </button>
             <button
-              onClick={() => copyToClipboard(campaign.socialThread.content, 'Social thread')}
-              className="flex flex-col items-center gap-1 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => window.open(`/preview/social/${workflow.id}`, '_blank')}
+              className="flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-200 dark:hover:border-green-800 transition-all group"
             >
-              <Share2 className="w-5 h-5 text-green-600 dark:text-green-400" />
-              <span className="text-xs font-medium">Social</span>
+              <Share2 className="w-6 h-6 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Preview Social</span>
             </button>
             <button
-              onClick={() => copyToClipboard(campaign.emailTeaser.content, 'Email teaser')}
-              className="flex flex-col items-center gap-1 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => window.open(`/preview/email/${workflow.id}`, '_blank')}
+              className="flex flex-col items-center gap-1.5 p-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:border-amber-200 dark:hover:border-amber-800 transition-all group"
             >
-              <Mail className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              <span className="text-xs font-medium">Email</span>
+              <Mail className="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Preview Email</span>
             </button>
           </div>
         )}

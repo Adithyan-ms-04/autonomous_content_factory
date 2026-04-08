@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { FileText, Share2, Mail, AlertCircle, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { FileText, Share2, Mail, AlertCircle, CheckCircle, XCircle, RefreshCw, MessageSquare } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { StatusBadge } from './StatusBadge';
 import { PreviewToggle } from './PreviewToggle';
 import type { CampaignWorkflow, ContentPiece, CampaignOutput } from '@/app/types';
@@ -183,49 +185,120 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
                 )}
 
                 {/* Content */}
-                <div
-                  className={`prose dark:prose-invert max-w-none ${
-                    activeTab === 'social'
-                      ? 'text-sm space-y-3'
-                      : activeTab === 'email'
-                        ? 'text-sm'
-                        : ''
-                  }`}
-                >
+                <div className="mt-6">
                   {activeTab === 'social' ? (
-                    <div className="space-y-3">
-                      {currentContent.content.split('\n').map((post, i) => (
-                        post.trim() && (
-                          <div
-                            key={i}
-                            className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                          >
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-8 h-8 rounded-full bg-blue-500" />
-                              <div>
-                                <div className="font-semibold text-sm">Brand</div>
-                                <div className="text-xs text-gray-500">@brand • Just now</div>
+                    <div className="max-w-[400px] mx-auto bg-white dark:bg-white/5 border-[8px] border-gray-800 dark:border-gray-900 rounded-[3rem] overflow-hidden shadow-2xl relative ring-1 ring-gray-900/5">
+                      {/* Mobile Header */}
+                      <div className="h-14 border-b border-gray-100 dark:border-white/10 flex items-center justify-between px-5 font-semibold text-gray-800 dark:text-gray-200">
+                        <span>Thread</span>
+                        <a 
+                          href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(currentContent.content)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-black hover:bg-gray-800 dark:bg-white dark:hover:bg-gray-200 text-white dark:text-black px-3 py-1.5 rounded-full text-xs font-bold transition-colors shadow-sm"
+                        >
+                          Post on X
+                        </a>
+                      </div>
+                      <div className="p-5 relative bg-gray-50 dark:bg-black min-h-[500px]">
+                        {/* The Thread Connector Line */}
+                        <div className="absolute top-8 bottom-12 left-10 w-0.5 bg-gray-200 dark:bg-gray-800 z-0" />
+                        
+                        <div className="space-y-0 relative z-10">
+                          {currentContent.content.split('\n').filter(p => p.trim()).map((post, i) => (
+                            <div key={i} className="flex gap-4 pb-6">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 shrink-0 border-4 border-gray-50 dark:border-black relative z-10 shadow-sm" />
+                              <div className="flex-1 pt-0.5">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="font-bold text-[15px] text-gray-900 dark:text-white">Brand</span>
+                                  <span className="text-gray-500 dark:text-gray-400 text-[15px]">@brand</span>
+                                </div>
+                                <p className="text-gray-800 dark:text-gray-200 text-[15px] leading-snug whitespace-pre-wrap">{post}</p>
+                                <div className="mt-3 flex justify-between items-center text-xs font-medium">
+                                  <div className="flex gap-4 text-gray-400">
+                                    <MessageSquare className="w-4 h-4" />
+                                    <RefreshCw className="w-4 h-4" />
+                                    <FileText className="w-4 h-4" />
+                                  </div>
+                                  <span className={post.length > 280 ? 'text-red-500' : 'text-gray-400'}>
+                                    {post.length}/280
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                            <p className="text-gray-800 dark:text-gray-200">{post}</p>
-                          </div>
-                        )
-                      ))}
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   ) : activeTab === 'email' ? (
-                    <div className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                      <p>{currentContent.content}</p>
+                    <div className="max-w-3xl mx-auto rounded-xl border border-gray-200 dark:border-white/10 shadow-xl overflow-hidden bg-white dark:bg-gray-900/50 backdrop-blur-sm">
+                      {/* Inbox Header Mockup */}
+                      <div className="bg-gray-50 dark:bg-black/40 px-6 py-5 border-b border-gray-200 dark:border-white/10 relative">
+                        {(() => {
+                            const match = currentContent.content.match(/^Subject:\s*(.*)/i);
+                            const subject = match ? match[1].trim() : '';
+                            const body = currentContent.content.replace(/^Subject:\s*.*\n?/i, '').trim();
+                            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                            return (
+                              <div className="absolute top-4 right-5 sm:top-5 sm:right-6">
+                                <a 
+                                  href={gmailUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm"
+                                >
+                                  <Mail className="w-4 h-4" />
+                                  Compose
+                                </a>
+                              </div>
+                            );
+                        })()}
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                            C
+                          </div>
+                          <div className="flex-1 text-sm">
+                            <div className="font-semibold text-gray-900 dark:text-white text-base">Content Team <span className="font-normal text-gray-500 dark:text-gray-400">&lt;marketing@brand.com&gt;</span></div>
+                            <div className="text-gray-500 dark:text-gray-400 mt-0.5">To: You</div>
+                          </div>
+                        </div>
+                        <h1 className="font-bold text-2xl text-gray-900 dark:text-white leading-tight pr-28">
+                          {(() => {
+                            const match = currentContent.content.match(/^Subject:\s*(.*)/i);
+                            return match ? match[1] : 'No Subject';
+                          })()}
+                        </h1>
+                      </div>
+                      {/* Email Body Shadow Box style */}
+                      <div className="p-8 md:p-10 bg-white dark:bg-gray-900">
+                        <div className="prose prose-lg dark:prose-invert max-w-none text-base whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300">
+                          {currentContent.content.replace(/^Subject:\s*.*\n?/i, '').trim()}
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <div
-                      className="prose dark:prose-invert"
-                      dangerouslySetInnerHTML={{
-                        __html: currentContent.content
-                          .replace(/\n\n/g, '</p><p>')
-                          .replace(/^/, '<p>')
-                          .replace(/$/, '</p>'),
-                      }}
-                    />
+                    <article className="max-w-[800px] mx-auto bg-white dark:bg-gray-900 p-8 sm:p-12 rounded-2xl shadow-sm border border-gray-200/60 dark:border-white/5 relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-500" />
+                      <div className="flex items-center gap-3 mb-8 text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        <span className="px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold flex items-center gap-1.5">
+                          Reading Time: {Math.max(1, Math.ceil(currentContent.content.split(/\s+/).length / 200))} mins
+                        </span>
+                        <span>•</span>
+                        <span>{currentContent.content.split(/\s+/).length} words</span>
+                      </div>
+                      <div className="prose prose-lg dark:prose-invert max-w-none hover:prose-a:text-blue-500 prose-a:text-blue-600 prose-a:no-underline prose-img:rounded-2xl leading-[1.7] text-gray-800 dark:text-gray-200">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({node, ...props}) => <h1 className="text-4xl sm:text-5xl font-black mt-10 mb-6 text-gray-900 dark:text-white leading-tight tracking-tight" {...props} />,
+                            h2: ({node, ...props}) => <h2 className="text-3xl sm:text-4xl font-extrabold mt-12 mb-4 text-gray-800 dark:text-gray-100" {...props} />,
+                            h3: ({node, ...props}) => <h3 className="text-2xl sm:text-3xl font-bold mt-8 mb-4 text-gray-800 dark:text-gray-100" {...props} />,
+                          }}
+                        >
+                          {currentContent.content}
+                        </ReactMarkdown>
+                      </div>
+                    </article>
                   )}
                 </div>
               </div>

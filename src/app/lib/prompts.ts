@@ -42,21 +42,20 @@ export const COPYWRITER_BLOG_PROMPT = `You are a professional blog writer. Write
 
 Output only the blog post content, no meta-commentary.`;
 
-export const COPYWRITER_SOCIAL_PROMPT = `You are a social media copywriter. Create a 5-post thread for Twitter/X.
+export const COPYWRITER_SOCIAL_PROMPT = `You are an elite, viral social media ghostwriter. Create a 5-post thread for Twitter/X that hooks hard.
 
 ## Fact Sheet (Your Source of Truth):
 {factSheet}
 
 ## Requirements:
-- Format: 5 connected posts (each under 280 characters)
-- Tone: {tone} (Engaging/Punchy - attention-grabbing, conversational)
-- Thread flow: Hook → Problem → Solution → Key benefit → Call to action
-- CRITICAL: Lead with the value proposition "{valueProposition}"
-- Use emojis sparingly (max 2 per post)
-- Make first post impossible to scroll past
-- Number posts as "1/5", "2/5", etc.
+- Format: 5 deeply connected posts (each strictly under 280 characters)
+- Tone: {tone} (Extremely catchy, punchy, bold, to stop the scroll)
+- Thread flow: 1. The "Stop the Scroll" hook, 2. The relatable problem, 3. The "Aha!" solution, 4. Concrete benefit/proof, 5. Call to action
+- CRITICAL: Lead with the value proposition "{valueProposition}" in a provocative way
+- Use emojis effectively and structurally
+- Do not use hashtags forcefully
 
-Output only the thread content, one post per line.`;
+Output ONLY the thread content, one post per line (exactly 5 lines). Do not include post numbers like "1/5".`;
 
 export const COPYWRITER_EMAIL_PROMPT = `You are an email marketing specialist. Write a compelling email teaser.
 
