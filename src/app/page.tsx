@@ -89,18 +89,62 @@ export default function Home() {
           }
           console.log('Copywrite step completed');
 
-          // Step 3: Review
-          console.log('Starting review step...');
-          const reviewRes = await fetch('/api/campaign/step/review', {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json' },
-             body: JSON.stringify({ workflowId })
-          });
-          if (!reviewRes.ok) {
-            const errData = await reviewRes.json().catch(() => ({}));
-            throw new Error(`Review step failed: ${errData.error || reviewRes.statusText}`);
+          // Step 3: Review and Auto-Regenerate
+          let isApproved = false;
+          let loops = 0;
+          const maxLoops = 5;
+
+          while (!isApproved && loops < maxLoops) {
+            console.log(`Starting review step (loop ${loops + 1})...`);
+            const reviewRes = await fetch('/api/campaign/step/review', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ workflowId })
+            });
+            if (!reviewRes.ok) {
+              const errData = await reviewRes.json().catch(() => ({}));
+              throw new Error(`Review step failed: ${errData.error || reviewRes.statusText}`);
+            }
+            const reviewData = await reviewRes.json();
+            
+            if (reviewData.allApproved) {
+              isApproved = true;
+              console.log('All content approved!');
+              break;
+            }
+
+            loops++;
+            if (loops >= maxLoops) {
+              console.log('Max regeneration loops reached. Manual intervention required.');
+              break;
+            }
+
+            console.log('Regenerating rejected content pieces...');
+            const wfRes = await fetch(`/api/campaign?id=${workflowId}`);
+            if (!wfRes.ok) throw new Error('Failed to fetch workflow state for regeneration');
+            const wf = await wfRes.json();
+
+            const campaign = wf.campaign;
+            if (campaign) {
+              const pieces = [campaign.blogPost, campaign.socialThread, campaign.emailTeaser].filter(Boolean);
+              
+              for (const piece of pieces) {
+                if (piece.status === 'rejected') {
+                  const regenRes = await fetch('/api/campaign', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      workflowId,
+                      contentPieceId: piece.id,
+                      correctionNotes: piece.rejectionReason || 'General improvement requested',
+                      skipReview: true,
+                    }),
+                  });
+                  if (!regenRes.ok) throw new Error(`Regeneration failed for piece ${piece.id}`);
+                }
+              }
+            }
           }
-          console.log('Review step completed');
 
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Workflow failed';

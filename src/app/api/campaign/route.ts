@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { workflowId, contentPieceId, correctionNotes } = body;
+    const { workflowId, contentPieceId, correctionNotes, skipReview } = body;
 
     if (!workflowId || !contentPieceId) {
       return NextResponse.json(
@@ -159,6 +159,15 @@ export async function PUT(request: NextRequest) {
     // Update campaign status
     const updatedCampaign = { ...workflow.campaign, status: 'reviewing' as const };
     await setCampaignOutput(workflowId, updatedCampaign);
+
+    if (skipReview) {
+      await updateAgentStatus(workflowId, { role: 'copywriter', state: 'completed' });
+      const updatedWorkflow = await getWorkflow(workflowId);
+      return NextResponse.json({
+        success: true,
+        workflow: updatedWorkflow,
+      });
+    }
 
     // Re-run editor review
     await updateAgentStatus(workflowId, {
