@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# AI agents
+.claude/
+.gemini/
+.agents/
+.agent/
+_agents/
+_agent/
+AGENTS.md
+CLAUDE.md
+
+# ide & os
+.vscode/
+.idea/
+*.swp
+*.swo
