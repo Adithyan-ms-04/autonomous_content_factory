@@ -13,9 +13,6 @@ An AI-powered multi-agent platform that transforms raw source material (articles
 - **Real-Time Dashboard** — Live agent status tracking, chat logs, and campaign overview.
 - **Content Studio** — View, review, and regenerate individual content pieces with correction notes.
 - **Export Center** — Download approved content or post directly to X / compose in Gmail.
-- **Documentation Page** — In-app `/docs` route with full usage guide.
-- **Drag & Drop Upload** — Supports `.txt`, `.md`, `.html` file uploads or direct text paste.
-- **Dark Mode** — Full dark mode support with premium glassmorphic UI.
 
 ---
 
