@@ -41,8 +41,6 @@ An **LLM-powered content validation gate** at the API entry-point prevents meani
 - Export Center with direct "Post on X" / "Compose in Gmail" integration
 - LLM-powered input validation to block spam/gibberish before workflow starts
 - Drag-and-drop file upload support (.txt, .md, .html)
-- Full dark mode with premium glassmorphic UI and micro-animations
-- In-app documentation page at `/docs`
 
 ---
 
