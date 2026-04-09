@@ -1,5 +1,5 @@
-// API Routes for Campaign Management
 import { NextRequest, NextResponse } from 'next/server';
+import { generateWithAI } from '@/app/lib/ai-client';
 import {
   getWorkflow,
   setWorkflow,
@@ -28,6 +28,31 @@ export async function POST(request: NextRequest) {
         { error: 'Content is required' },
         { status: 400 }
       );
+    }
+
+    // Validation to prevent gibberish using the LLM for high accuracy
+    if (content.trim().length < 20) {
+      return NextResponse.json(
+        { error: 'Source material is too short to generate a meaningful campaign. Please provide proper text or a link.' },
+        { status: 400 }
+      );
+    }
+
+    try {
+      // Fast check for gibberish vs valid source material
+      const prompt = `Determine if the following text is meaningful source material (like an article, notes, or product details) or just random keyboard mashes/spam gibberish. If it is meaningful, output strictly "VALID". If it is random keys or gibberish (e.g. "asdfasdf", "test test test"), strictly output "GIBBERISH". Do not output anything else.
+
+Text: ${content.substring(0, 800)}`;
+      
+      const validationResponse = await generateWithAI(prompt, 50);
+      if (validationResponse.toUpperCase().includes('GIBBERISH')) {
+        return NextResponse.json(
+          { error: 'Input was detected as gibberish. Please provide meaningful information so our agents can draft a powerful campaign.' },
+          { status: 400 }
+        );
+      }
+    } catch (e) {
+      console.warn('Content validation skipped due to AI client error:', e);
     }
 
     // Create source document

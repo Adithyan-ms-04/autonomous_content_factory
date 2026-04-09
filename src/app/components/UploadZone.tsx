@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Upload, FileText, Link, Loader2 } from 'lucide-react';
+import { Upload, FileText, Link, Loader2, Sparkles } from 'lucide-react';
 
 interface UploadZoneProps {
   onSubmit: (content: string, sourceUrl?: string, title?: string) => void;
@@ -36,12 +36,15 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
         reader.onload = (event) => {
           const text = event.target?.result as string;
           setContent(text);
-          setTitle(file.name.replace(/\.[^/.]+$/, ''));
+          // Only override title if it's currently empty
+          if (!title) {
+            setTitle(file.name.replace(/\.[^/.]+$/, ''));
+          }
         };
         reader.readAsText(file);
       }
     }
-  }, []);
+  }, [title]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -50,7 +53,9 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
       reader.onload = (event) => {
         const text = event.target?.result as string;
         setContent(text);
-        setTitle(file.name.replace(/\.[^/.]+$/, ''));
+        if (!title) {
+          setTitle(file.name.replace(/\.[^/.]+$/, ''));
+        }
       };
       reader.readAsText(file);
     }
@@ -63,129 +68,143 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Autonomous Content Factory
+    <div className="w-full max-w-2xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+      {/* Heading Section */}
+      <div className="text-center space-y-4 mb-10 relative">
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+        <h1 className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400 drop-shadow-sm">
+          Autonomous Campaign
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Transform your source material into multi-channel marketing campaigns
+        <p className="text-lg text-gray-600 dark:text-gray-400 font-medium">
+          Drop your ideas. We build the marketing strategy.
         </p>
       </div>
 
-      {/* Title Input */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          Campaign Title (optional)
-        </label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g., Product Launch Q2 2024"
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-      </div>
+      {/* Main Form Box */}
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
+        <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl ring-1 ring-gray-200/50 dark:ring-white/10 rounded-3xl p-8 shadow-2xl">
+          
+          <div className="space-y-6">
+            {/* Title Input */}
+            <div className="space-y-2 group/input">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+                Campaign Title <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g., Q3 Product Launch Strategy"
+                className="w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 hover:border-gray-300 dark:hover:border-gray-600"
+              />
+            </div>
 
-      {/* Drag & Drop Zone */}
-      <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-          isDragging
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-        }`}
-      >
-        <input
-          type="file"
-          accept=".txt,.md,.html,.json"
-          onChange={handleFileInput}
-          className="hidden"
-          id="file-upload"
-        />
-        <label
-          htmlFor="file-upload"
-          className="cursor-pointer flex flex-col items-center gap-3"
-        >
-          <div className="p-4 rounded-full bg-gray-100 dark:bg-gray-800">
-            <Upload className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+            {/* Drag & Drop Zone */}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-300 group/drop ${
+                isDragging
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02] shadow-inner'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-blue-400/50 dark:hover:border-blue-500/50 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+              }`}
+            >
+              <input
+                type="file"
+                accept=".txt,.md,.html,.json"
+                onChange={handleFileInput}
+                className="hidden"
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer flex flex-col items-center gap-4 relative z-10"
+              >
+                <div className={`p-5 rounded-2xl transition-all duration-300 ${isDragging ? 'bg-blue-100 dark:bg-blue-800/50 rotate-6 scale-110' : 'bg-white dark:bg-gray-800 shadow-sm group-hover/drop:-translate-y-1 group-hover/drop:shadow-md'}`}>
+                  <Upload className={`w-8 h-8 ${isDragging ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} />
+                </div>
+                <div className="space-y-1">
+                  <p className="font-semibold text-gray-900 dark:text-white text-lg">
+                    Drop a file here or browse
+                  </p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Supports .md, .txt, .html files
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            {/* OR Divider */}
+            <div className="flex items-center gap-4 py-2">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
+              <span className="text-xs font-bold tracking-widest text-gray-400 uppercase">OR</span>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
+            </div>
+
+            {/* Direct Text Input */}
+            <div className="space-y-2 group/text">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1 flex items-center gap-2">
+                <FileText className="w-4 h-4 text-blue-500" />
+                Raw Source Material
+              </label>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Paste blog content, raw notes, or technical specifications here to transform them..."
+                rows={6}
+                className="w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y transition-all hover:border-gray-300 dark:hover:border-gray-600"
+              />
+            </div>
+
+            {/* Source URL Input */}
+            <div className="space-y-2 group/url">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1 flex items-center gap-2">
+                <Link className="w-4 h-4 text-purple-500" />
+                Reference URL <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="url"
+                value={sourceUrl}
+                onChange={(e) => setSourceUrl(e.target.value)}
+                placeholder="https://example.com/context-article"
+                className="w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
+              />
+            </div>
+
+            {/* Submit Button */}
+            <button
+              onClick={handleSubmit}
+              disabled={!content.trim() || isLoading}
+              className={`w-full relative overflow-hidden flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-bold text-lg transition-all duration-300 ${
+                content.trim() && !isLoading
+                  ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:scale-[1.02] hover:shadow-xl hover:shadow-gray-900/20 dark:hover:shadow-white/20'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {content.trim() && !isLoading && (
+                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+              )}
+              
+              <div className="relative z-10 flex items-center gap-3">
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>Orchestrating AI Agents...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-6 h-6" />
+                    <span className={content.trim() ? "group-hover:text-white transition-colors" : ""}>Generate Campaign</span>
+                  </>
+                )}
+              </div>
+            </button>
           </div>
-          <div>
-            <p className="font-medium text-gray-900 dark:text-white">
-              Drop a file here or click to browse
-            </p>
-            <p className="text-sm text-gray-500">
-              Supports .txt, .md, .html files
-            </p>
-          </div>
-        </label>
-      </div>
 
-      {/* OR Divider */}
-      <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
-        <span className="text-sm text-gray-500">OR</span>
-        <div className="flex-1 h-px bg-gray-300 dark:bg-gray-600" />
+        </div>
       </div>
-
-      {/* Direct Text Input */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          <div className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            Paste your content
-          </div>
-        </label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Paste your product description, technical specs, blog post, or any source material here..."
-          rows={8}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y"
-        />
-      </div>
-
-      {/* Source URL Input */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-          <div className="flex items-center gap-2">
-            <Link className="w-4 h-4" />
-            Source URL (optional)
-          </div>
-        </label>
-        <input
-          type="url"
-          value={sourceUrl}
-          onChange={(e) => setSourceUrl(e.target.value)}
-          placeholder="https://example.com/article"
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-      </div>
-
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!content.trim() || isLoading}
-        className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-          content.trim() && !isLoading
-            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-        }`}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Creating Campaign...
-          </>
-        ) : (
-          <>
-            <Upload className="w-5 h-5" />
-            Start Campaign
-          </>
-        )}
-      </button>
     </div>
   );
 }

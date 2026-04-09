@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Autonomous Content Factory
 
-## Getting Started
+An AI-powered multi-agent platform that transforms raw source material (articles, product specs, notes) into production-ready, multi-channel marketing campaigns — including blog posts, social media threads, and email teasers — all in one automated workflow.
 
-First, run the development server:
+**Creator:** Adithyan M S
+
+---
+
+## Features
+
+- **Multi-Agent Architecture** — Three specialized AI agents (Researcher, Copywriter, Editor) collaborate autonomously.
+- **Intelligent Content Validation** — LLM-powered gate prevents gibberish/spam from triggering expensive workflows.
+- **Real-Time Dashboard** — Live agent status tracking, chat logs, and campaign overview.
+- **Content Studio** — View, review, and regenerate individual content pieces with correction notes.
+- **Export Center** — Download approved content or post directly to X / compose in Gmail.
+- **Documentation Page** — In-app `/docs` route with full usage guide.
+- **Drag & Drop Upload** — Supports `.txt`, `.md`, `.html` file uploads or direct text paste.
+- **Dark Mode** — Full dark mode support with premium glassmorphic UI.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript |
+| AI SDK | Vercel AI SDK + Groq (LLaMA-based `openai/gpt-oss-120b`) |
+| Database | SQLite via Prisma ORM |
+| Styling | Tailwind CSS 4 |
+| Icons | Lucide React |
+
+---
+
+## Prerequisites
+
+- **Node.js** v18 or later
+- **npm** v9 or later
+- A **Groq API Key** (free at [console.groq.com](https://console.groq.com))
+
+---
+
+## Setup & Run Locally
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/<your-username>/content-factory.git
+cd content-factory
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure environment variables
+
+Create a `.env.local` file in the project root:
+
+```env
+DATABASE_URL="file:./prisma/dev.db"
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### 4. Initialize the database
+
+```bash
+npx prisma generate
+npx prisma db push
+```
+
+### 5. Start the development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 6. Open in browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Navigate to [http://localhost:3000](http://localhost:3000)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## How to Use
 
-To learn more about Next.js, take a look at the following resources:
+1. **Paste or upload** your source material (product description, article, technical notes).
+2. Optionally add a **Campaign Title** and a **Reference URL**.
+3. Click **"Generate Campaign"** to launch the multi-agent pipeline.
+4. Monitor progress on the **Overview** tab and agent chat on the **Live Logs** tab.
+5. Review generated content (Blog Post, Social Thread, Email Teaser) in **Content Studio**.
+6. Export or share finished content from the **Export Center**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+content-factory/
+├── prisma/              # Database schema & SQLite file
+├── src/app/
+│   ├── agents/          # AI agent logic (researcher, copywriter, editor)
+│   ├── api/campaign/    # REST API routes for workflow management
+│   ├── components/      # React UI components
+│   ├── docs/            # Documentation page
+│   ├── lib/             # AI client, store, utilities
+│   ├── preview/         # Content preview routes
+│   ├── types/           # TypeScript type definitions
+│   ├── layout.tsx       # Root layout with navigation
+│   ├── page.tsx         # Main application page
+│   └── globals.css      # Global styles & animations
+├── .env.local           # Environment variables (not committed)
+├── APPROACH.md          # Solution design document
+└── package.json
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+This project was built as part of the 2-Week AI Sprint.
+© 2026 Adithyan M S. All rights reserved.

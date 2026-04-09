@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UploadZone } from '@/app/components/UploadZone';
 import { CampaignView } from '@/app/components/CampaignView';
 import { AgentRoom } from '@/app/components/AgentRoom';
@@ -14,6 +14,7 @@ import type { CampaignWorkflow } from '@/app/types';
 
 export default function Home() {
   const [workflow, setWorkflow] = useState<CampaignWorkflow | null>(null);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'chat' | 'content' | 'export'>('overview');
@@ -36,7 +37,10 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create campaign');
+        const errData = await response.json().catch(() => ({}));
+        const errMsg = errData.error || 'Failed to create campaign';
+        alert(`Validation Error: ${errMsg}`);
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
@@ -47,13 +51,13 @@ export default function Home() {
       setWorkflow(initialWorkflow);
 
       // Start background polling for UI state
-      const pollInterval = setInterval(async () => {
+      pollIntervalRef.current = setInterval(async () => {
         const res = await fetch(`/api/campaign?id=${data.workflowId}`);
         if (res.ok) {
            const updated = await res.json();
            setWorkflow(updated);
            if (updated.currentStep === 'complete') {
-             clearInterval(pollInterval);
+             if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
            }
         }
       }, 2000);
@@ -150,14 +154,16 @@ export default function Home() {
           const message = err instanceof Error ? err.message : 'Workflow failed';
           console.error('Workflow sequence error:', err);
           setError(message);
-          clearInterval(pollInterval);
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
         }
       };
 
       // Fire and forget the steps! The UI relies on the polling to see status
       runWorkflowSteps(data.workflowId);
 
-      return () => clearInterval(pollInterval);
+      return () => {
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
@@ -237,6 +243,10 @@ export default function Home() {
           </div>
           <button
             onClick={() => {
+              if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+              }
               setWorkflow(null);
               setError('');
               setActiveTab('overview');
