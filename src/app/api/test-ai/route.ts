@@ -4,18 +4,11 @@ import { createGroq } from '@ai-sdk/groq';
 import { AI_MODEL } from '@/app/lib/ai-client';
 
 const groq = createGroq({
-  apiKey: process.env.GROQ_API_KEY,
+  apiKey: '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',
 });
 
 export async function GET() {
   try {
-    // Check if API key is set
-    if (!process.env.GROQ_API_KEY) {
-      return NextResponse.json(
-        { error: 'GROQ_API_KEY is not set in environment' },
-        { status: 500 }
-      );
-    }
 
     // Try a simple generation
     const { text } = await generateText({

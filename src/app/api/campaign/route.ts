@@ -8,10 +8,13 @@ import {
   updateWorkflowStep,
   setCampaignOutput,
   updateContentPiece,
+  setWorkflowLanguage,
+  setWorkflowTones,
 } from '@/app/lib/store';
 import { regenerateContent } from '@/app/agents/copywriter';
 import { reviewCampaign, getCorrectionNotes } from '@/app/agents/editor';
 import { generateId } from '@/app/lib/utils';
+import { checkRateLimit, CAMPAIGN_RATE_LIMIT, MAX_REQUEST_BODY_SIZE } from '@/app/lib/rate-limit';
 import type {
   SourceDocument,
   CampaignWorkflow,
@@ -20,8 +23,33 @@ import type {
 // POST /api/campaign - Create new campaign workflow state
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateLimitResult = checkRateLimit(clientIp, CAMPAIGN_RATE_LIMIT);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please wait before creating another campaign.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil(rateLimitResult.resetMs / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      );
+    }
+
+    // Request body size validation
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_BODY_SIZE) {
+      return NextResponse.json(
+        { error: 'Request body too large. Maximum size is 500 KB.' },
+        { status: 413 }
+      );
+    }
+
     const body = await request.json();
-    const { content, sourceUrl, title } = body;
+    const { content, sourceUrl, title, language, tones } = body;
 
     if (!content || typeof content !== 'string') {
       return NextResponse.json(
@@ -44,7 +72,7 @@ export async function POST(request: NextRequest) {
 
 Text: ${content.substring(0, 800)}`;
       
-      const validationResponse = await generateWithAI(prompt, 50);
+      const validationResponse = await generateWithAI(prompt);
       if (validationResponse.toUpperCase().includes('GIBBERISH')) {
         return NextResponse.json(
           { error: 'Input was detected as gibberish. Please provide meaningful information so our agents can draft a powerful campaign.' },
@@ -75,11 +103,14 @@ Text: ${content.substring(0, 800)}`;
       ],
       messages: [],
       currentStep: 'upload',
+      language: language || 'en',
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     await setWorkflow(workflow);
+    setWorkflowLanguage(workflow.id, language || 'en');
+    if (tones) setWorkflowTones(workflow.id, tones);
 
     return NextResponse.json({
       workflowId: workflow.id,
@@ -169,7 +200,8 @@ export async function PUT(request: NextRequest) {
     const { content, messages } = await regenerateContent(
       contentPiece,
       workflow.factSheet,
-      correctionNotes || 'General improvement requested'
+      correctionNotes || 'General improvement requested',
+      workflow.language
     );
 
     // Update messages

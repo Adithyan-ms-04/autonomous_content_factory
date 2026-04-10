@@ -79,6 +79,7 @@ export function CampaignHistory({ campaigns, onResume, onClear, isLoadingId }: C
         </div>
         <button
           onClick={onClear}
+          aria-label="Clear all campaign history"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all"
         >
           <Trash2 className="w-4 h-4" />
@@ -96,6 +97,7 @@ export function CampaignHistory({ campaigns, onResume, onClear, isLoadingId }: C
               key={campaign.id}
               onClick={() => onResume(campaign.id)}
               disabled={isLoading}
+              aria-label={`Resume campaign: ${campaign.title}`}
               className="w-full group text-left p-5 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 hover:border-blue-300 dark:hover:border-blue-700 transition-all hover:shadow-md relative overflow-hidden"
             >
               {/* Left accent bar */}

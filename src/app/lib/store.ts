@@ -1,9 +1,27 @@
 // Prisma store for campaign workflows
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './prisma';
 import type { CampaignWorkflow, AgentMessage, AgentStatus, SourceDocument, FactSheet, CampaignOutput, ContentPiece } from '@/app/types';
 import { generateId } from './utils';
 
-const prisma = new PrismaClient();
+// In-memory store for language (not in Prisma schema)
+const languageMap = new Map<string, string>();
+const tonesMap = new Map<string, { blog: string; social: string; email: string }>();
+
+export function setWorkflowLanguage(workflowId: string, language: string) {
+  languageMap.set(workflowId, language);
+}
+
+export function getWorkflowLanguage(workflowId: string): string {
+  return languageMap.get(workflowId) || 'en';
+}
+
+export function setWorkflowTones(workflowId: string, tones: { blog: string; social: string; email: string }) {
+  tonesMap.set(workflowId, tones);
+}
+
+export function getWorkflowTones(workflowId: string): { blog: string; social: string; email: string } {
+  return tonesMap.get(workflowId) || { blog: 'professional', social: 'punchy', email: 'formal' };
+}
 
 // Helper to map Prisma models to our TS interfaces
 function mapPrismaToWorkflow(prismaWorkflow: any): CampaignWorkflow | undefined {
@@ -64,6 +82,7 @@ function mapPrismaToWorkflow(prismaWorkflow: any): CampaignWorkflow | undefined 
       type: m.type,
     })),
     currentStep: prismaWorkflow.currentStep as any,
+    language: languageMap.get(prismaWorkflow.id) || 'en',
     createdAt: prismaWorkflow.createdAt,
     updatedAt: prismaWorkflow.updatedAt,
   };

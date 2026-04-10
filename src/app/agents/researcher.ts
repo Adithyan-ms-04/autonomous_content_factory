@@ -5,10 +5,6 @@ import { buildResearcherPrompt } from '@/app/lib/prompts';
 import { generateId } from '@/app/lib/utils';
 import type { FactSheet, SourceDocument, AgentMessage } from '@/app/types';
 
-// Check API key on module load
-if (!process.env.GROQ_API_KEY) {
-  console.error('ERROR: GROQ_API_KEY is not set!');
-}
 
 export interface ResearcherResult {
   factSheet: FactSheet;

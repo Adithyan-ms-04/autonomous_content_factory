@@ -24,7 +24,8 @@ const DEFAULT_TONES: ToneConfig = {
 
 export async function generateContent(
   factSheet: FactSheet,
-  tones: Partial<ToneConfig> = {}
+  tones: Partial<ToneConfig> = {},
+  language?: string
 ): Promise<CopywriterResult> {
   const mergedTones = { ...DEFAULT_TONES, ...tones };
   const messages: AgentMessage[] = [];
@@ -51,9 +52,9 @@ export async function generateContent(
       type: 'action',
     });
 
-    const blogResult = await generateBlogPost(factSheetText, factSheet.valueProposition, mergedTones.blog);
-    const socialResult = await generateSocialThread(factSheetText, factSheet.valueProposition, mergedTones.social);
-    const emailResult = await generateEmailTeaser(factSheetText, factSheet.valueProposition, mergedTones.email);
+    const blogResult = await generateBlogPost(factSheetText, factSheet.valueProposition, mergedTones.blog, language);
+    const socialResult = await generateSocialThread(factSheetText, factSheet.valueProposition, mergedTones.social, language);
+    const emailResult = await generateEmailTeaser(factSheetText, factSheet.valueProposition, mergedTones.email, language);
 
     const blogPost: ContentPiece = {
       id: generateId(),
@@ -119,35 +120,38 @@ export async function generateContent(
 async function generateBlogPost(
   factSheetText: string,
   valueProposition: string,
-  tone: string
+  tone: string,
+  language?: string
 ): Promise<string> {
-  const prompt = buildCopywriterPrompt(factSheetText, valueProposition, tone, 'blog');
-  return generateWithAI(prompt, 2000);
+  const prompt = buildCopywriterPrompt(factSheetText, valueProposition, tone, 'blog', language);
+  return generateWithAI(prompt);
 }
 
 async function generateSocialThread(
   factSheetText: string,
   valueProposition: string,
-  tone: string
+  tone: string,
+  language?: string
 ): Promise<string> {
-  const prompt = buildCopywriterPrompt(factSheetText, valueProposition, tone, 'social');
-  return generateWithAI(prompt, 1500);
+  const prompt = buildCopywriterPrompt(factSheetText, valueProposition, tone, 'social', language);
+  return generateWithAI(prompt);
 }
 
 async function generateEmailTeaser(
   factSheetText: string,
   valueProposition: string,
-  tone: string
+  tone: string,
+  language?: string
 ): Promise<string> {
-  const prompt = buildCopywriterPrompt(factSheetText, valueProposition, tone, 'email');
-  return generateWithAI(prompt, 800);
+  const prompt = buildCopywriterPrompt(factSheetText, valueProposition, tone, 'email', language);
+  return generateWithAI(prompt);
 }
 
-// Regenerate a specific content piece with corrections
 export async function regenerateContent(
   contentPiece: ContentPiece,
   factSheet: FactSheet,
-  correctionNotes: string
+  correctionNotes: string,
+  language?: string
 ): Promise<{ content: string; messages: AgentMessage[] }> {
   const messages: AgentMessage[] = [];
   const factSheetText = formatFactSheetForAgents(factSheet);
@@ -166,10 +170,11 @@ export async function regenerateContent(
     factSheetText + '\n\n## Correction Notes:\n' + correctionNotes,
     factSheet.valueProposition,
     tone,
-    contentPiece.type
+    contentPiece.type,
+    language
   );
 
-  const newContent = await generateWithAI(prompt, 2000);
+  const newContent = await generateWithAI(prompt);
 
   messages.push({
     id: generateId(),

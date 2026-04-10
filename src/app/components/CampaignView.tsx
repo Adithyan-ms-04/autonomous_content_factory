@@ -20,6 +20,9 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [correctionNotes, setCorrectionNotes] = useState('');
   const [showCorrectionInput, setShowCorrectionInput] = useState(false);
+  // Feature 4: Inline editing
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState('');
 
   const campaign = workflow?.campaign;
   const sourceDoc = workflow?.sourceDocument;
@@ -38,6 +41,22 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
       onRegenerate(currentContent.id, correctionNotes || 'General improvement needed');
       setCorrectionNotes('');
       setShowCorrectionInput(false);
+    }
+  };
+
+  // Feature 4: Start editing
+  const startEditing = () => {
+    if (currentContent) {
+      setEditContent(currentContent.content);
+      setIsEditing(true);
+    }
+  };
+
+  // Feature 4: Save edit (updates the content piece in-place on client)
+  const saveEdit = () => {
+    if (currentContent && workflow?.campaign) {
+      currentContent.content = editContent;
+      setIsEditing(false);
     }
   };
 
@@ -83,7 +102,7 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
         {/* Generated Content Panel */}
         <div className="space-y-2">
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 dark:border-gray-700">
+          <div className="flex border-b border-gray-200 dark:border-gray-700" role="tablist" aria-label="Content type tabs">
             {tabs.map((tab) => {
               const content = getContentPiece(tab.id);
               const Icon = tab.icon;
@@ -91,6 +110,10 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`tabpanel-${tab.id}`}
+                  id={`tab-${tab.id}`}
                   className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors relative ${
                     activeTab === tab.id
                       ? 'text-blue-600 dark:text-blue-400'
@@ -119,6 +142,9 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
 
           {/* Content Display */}
           <div
+            role="tabpanel"
+            id={`tabpanel-${activeTab}`}
+            aria-labelledby={`tab-${activeTab}`}
             className={`p-6 rounded-2xl border border-gray-200/50 dark:border-gray-800/50 bg-white dark:bg-gray-950/40 h-[552px] overflow-y-auto custom-scrollbar shadow-lg ${
               previewMode === 'mobile' ? 'max-w-sm mx-auto' : ''
             }`}
@@ -135,6 +161,32 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {/* Feature 4: Edit Button */}
+                    {!isEditing ? (
+                      <button
+                        onClick={startEditing}
+                        aria-label="Edit content inline"
+                        className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      >
+                        ✏️ Edit
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={saveEdit}
+                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                        >
+                          ✓ Save
+                        </button>
+                        <button
+                          onClick={() => setIsEditing(false)}
+                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                        >
+                          ✕ Cancel
+                        </button>
+                      </>
+                    )}
+
                     {currentContent.status === 'rejected' && (
                       <button
                         onClick={() => setShowCorrectionInput(!showCorrectionInput)}
@@ -186,7 +238,15 @@ export function CampaignView({ workflow, onRegenerate }: CampaignViewProps) {
 
                 {/* Content */}
                 <div className="mt-6">
-                  {activeTab === 'social' ? (
+                  {/* Feature 4: Inline editor */}
+                  {isEditing ? (
+                    <textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      className="w-full h-[400px] p-4 rounded-xl border border-blue-300 dark:border-blue-700 bg-blue-50/30 dark:bg-blue-950/20 text-gray-900 dark:text-white font-mono text-sm resize-y focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      aria-label="Edit content"
+                    />
+                  ) : activeTab === 'social' ? (
                     <div className="max-w-[400px] mx-auto bg-white dark:bg-white/5 border-[8px] border-gray-800 dark:border-gray-900 rounded-[3rem] overflow-hidden shadow-2xl relative ring-1 ring-gray-900/5">
                       {/* Mobile Header */}
                       <div className="h-14 border-b border-gray-100 dark:border-white/10 flex items-center justify-between px-5 font-semibold text-gray-800 dark:text-gray-200">

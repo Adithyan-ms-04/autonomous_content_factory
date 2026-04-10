@@ -38,7 +38,7 @@ export interface CampaignOutput {
   createdAt: Date;
 }
 
-export type AgentRole = 'researcher' | 'copywriter' | 'editor';
+export type AgentRole = 'researcher' | 'copywriter' | 'editor' | 'scraper';
 
 export type AgentState = 'idle' | 'thinking' | 'typing' | 'reviewing' | 'completed' | 'error';
 
@@ -64,13 +64,59 @@ export interface CampaignWorkflow {
   campaign?: CampaignOutput;
   agentStatuses: AgentStatus[];
   messages: AgentMessage[];
-  currentStep: 'upload' | 'research' | 'copywrite' | 'review' | 'complete';
+  currentStep: 'upload' | 'scrape' | 'research' | 'copywrite' | 'review' | 'complete';
   createdAt: Date;
   updatedAt: Date;
+  // Feature 7: Campaign Tags
+  tags?: string[];
+  // Feature 8: Multi-language
+  language?: string;
 }
 
 export interface ToneConfig {
-  blog: 'professional' | 'casual' | 'technical';
-  social: 'punchy' | 'engaging' | 'professional';
-  email: 'formal' | 'friendly' | 'urgent';
+  blog: string;
+  social: string;
+  email: string;
 }
+
+/** Feature 2: Content analytics */
+export interface ContentAnalytics {
+  wordCount: number;
+  charCount: number;
+  readingTimeMinutes: number;
+  readingLevel: string;
+  fleschScore: number;
+  sentenceCount: number;
+  avgWordsPerSentence: number;
+  topKeywords: { word: string; count: number }[];
+}
+
+/** Feature 6: Calendar schedule item */
+export interface ScheduleItem {
+  type: 'blog' | 'social' | 'email';
+  label: string;
+  dayOffset: number;
+  dayName: string;
+  date: string;
+  color: string;
+}
+
+/** Feature 3: A/B variant */
+export interface ContentVariant {
+  tone: string;
+  content: string;
+}
+
+/** Supported output languages */
+export const SUPPORTED_LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'es', label: 'Spanish' },
+  { code: 'fr', label: 'French' },
+  { code: 'de', label: 'German' },
+  { code: 'hi', label: 'Hindi' },
+  { code: 'ja', label: 'Japanese' },
+  { code: 'zh', label: 'Chinese' },
+  { code: 'ar', label: 'Arabic' },
+  { code: 'pt', label: 'Portuguese' },
+  { code: 'ko', label: 'Korean' },
+] as const;

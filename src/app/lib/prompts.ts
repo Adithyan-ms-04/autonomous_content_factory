@@ -34,7 +34,7 @@ export const COPYWRITER_BLOG_PROMPT = `You are a professional blog writer. Write
 
 ## Requirements:
 - Length: Approximately 500 words
-- Tone: {tone} (Professional/Trustworthy - authoritative but accessible)
+- Tone: {tone} — write the entire post in this tone. Adapt your vocabulary, sentence structure, and style to match.
 - Structure: Hook intro, problem statement, solution with key features, benefits, call-to-action
 - CRITICAL: The value proposition "{valueProposition}" must be the hero of this post
 - Use subheadings for readability
@@ -49,7 +49,7 @@ export const COPYWRITER_SOCIAL_PROMPT = `You are an elite, viral social media gh
 
 ## Requirements:
 - Format: 5 deeply connected posts (each strictly under 280 characters)
-- Tone: {tone} (Extremely catchy, punchy, bold, to stop the scroll)
+- Tone: {tone} — write every post in this voice. Match slang, energy, and style to this tone.
 - Thread flow: 1. The "Stop the Scroll" hook, 2. The relatable problem, 3. The "Aha!" solution, 4. Concrete benefit/proof, 5. Call to action
 - CRITICAL: Lead with the value proposition "{valueProposition}" in a provocative way
 - Use emojis effectively and structurally
@@ -64,7 +64,7 @@ export const COPYWRITER_EMAIL_PROMPT = `You are an email marketing specialist. W
 
 ## Requirements:
 - Length: One paragraph (4-6 sentences)
-- Tone: {tone} (Formal/Friendly - professional but warm)
+- Tone: {tone} — write the email body in this voice. Adapt formality, warmth, and pacing to match.
 - Structure: Hook, value proposition, soft CTA
 - CRITICAL: Focus on "{valueProposition}"
 - Subject line is NOT needed
@@ -110,24 +110,38 @@ export function buildCopywriterPrompt(
   factSheet: string,
   valueProposition: string,
   tone: string,
-  contentType: 'blog' | 'social' | 'email'
+  contentType: 'blog' | 'social' | 'email',
+  language?: string
 ): string {
+  let prompt: string;
   if (contentType === 'blog') {
-    return COPYWRITER_BLOG_PROMPT
+    prompt = COPYWRITER_BLOG_PROMPT
+      .replace('{factSheet}', factSheet)
+      .replace('{tone}', tone)
+      .replace('{valueProposition}', valueProposition);
+  } else if (contentType === 'social') {
+    prompt = COPYWRITER_SOCIAL_PROMPT
+      .replace('{factSheet}', factSheet)
+      .replace('{tone}', tone)
+      .replace('{valueProposition}', valueProposition);
+  } else {
+    prompt = COPYWRITER_EMAIL_PROMPT
       .replace('{factSheet}', factSheet)
       .replace('{tone}', tone)
       .replace('{valueProposition}', valueProposition);
   }
-  if (contentType === 'social') {
-    return COPYWRITER_SOCIAL_PROMPT
-      .replace('{factSheet}', factSheet)
-      .replace('{tone}', tone)
-      .replace('{valueProposition}', valueProposition);
+
+  // Feature 8: Multi-language support
+  if (language && language !== 'en') {
+    const langMap: Record<string, string> = {
+      es: 'Spanish', fr: 'French', de: 'German', hi: 'Hindi',
+      ja: 'Japanese', zh: 'Chinese', ar: 'Arabic', pt: 'Portuguese', ko: 'Korean',
+    };
+    const langName = langMap[language] || language;
+    prompt += `\n\nIMPORTANT: Generate all content in ${langName}. The entire output MUST be written in ${langName}.`;
   }
-  return COPYWRITER_EMAIL_PROMPT
-    .replace('{factSheet}', factSheet)
-    .replace('{tone}', tone)
-    .replace('{valueProposition}', valueProposition);
+
+  return prompt;
 }
 
 export function buildEditorPrompt(

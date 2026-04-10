@@ -1,10 +1,17 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Upload, FileText, Link, Loader2, Sparkles } from 'lucide-react';
+import { Upload, FileText, Link, Loader2, Sparkles, Globe, Palette } from 'lucide-react';
+import { SUPPORTED_LANGUAGES } from '@/app/types';
+
+interface ToneOptions {
+  blog: string;
+  social: string;
+  email: string;
+}
 
 interface UploadZoneProps {
-  onSubmit: (content: string, sourceUrl?: string, title?: string) => void;
+  onSubmit: (content: string, sourceUrl?: string, title?: string, language?: string, tones?: ToneOptions) => void;
   isLoading: boolean;
 }
 
@@ -13,6 +20,10 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
   const [sourceUrl, setSourceUrl] = useState('');
   const [title, setTitle] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [language, setLanguage] = useState('en');
+  const [blogTone, setBlogTone] = useState('professional');
+  const [socialTone, setSocialTone] = useState('punchy');
+  const [emailTone, setEmailTone] = useState('formal');
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -36,7 +47,6 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
         reader.onload = (event) => {
           const text = event.target?.result as string;
           setContent(text);
-          // Only override title if it's currently empty
           if (!title) {
             setTitle(file.name.replace(/\.[^/.]+$/, ''));
           }
@@ -63,7 +73,7 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
 
   const handleSubmit = () => {
     if (content.trim()) {
-      onSubmit(content, sourceUrl || undefined, title || undefined);
+      onSubmit(content, sourceUrl || undefined, title || undefined, language, { blog: blogTone, social: socialTone, email: emailTone });
     }
   };
 
@@ -105,6 +115,8 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              role="region"
+              aria-label="File drop zone — drag and drop a file here or click to browse"
               className={`relative border-2 border-dashed rounded-2xl p-10 text-center transition-all duration-300 group/drop ${
                 isDragging
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.02] shadow-inner'
@@ -117,6 +129,7 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
                 onChange={handleFileInput}
                 className="hidden"
                 id="file-upload"
+                aria-label="Upload a source file (.txt, .md, .html, .json)"
               />
               <label
                 htmlFor="file-upload"
@@ -171,6 +184,88 @@ export function UploadZone({ onSubmit, isLoading }: UploadZoneProps) {
                 placeholder="https://example.com/context-article"
                 className="w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600"
               />
+            </div>
+
+            {/* Language & Tags Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Language Selector */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1 flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-cyan-500" />
+                  Output Language
+                </label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  aria-label="Select output language"
+                  className="w-full px-5 py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:border-gray-300 dark:hover:border-gray-600"
+                >
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <option key={lang.code} value={lang.code}>{lang.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Tone Selectors */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1 flex items-center gap-2">
+                <Palette className="w-4 h-4 text-violet-500" />
+                Content Tone
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Blog Tone */}
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">Blog</span>
+                  <select
+                    value={blogTone}
+                    onChange={(e) => setBlogTone(e.target.value)}
+                    aria-label="Select blog tone"
+                    className="w-full px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  >
+                    <option value="professional">Professional</option>
+                    <option value="conversational">Conversational</option>
+                    <option value="academic">Academic</option>
+                    <option value="storytelling">Storytelling</option>
+                    <option value="technical">Technical</option>
+                    <option value="inspirational">Inspirational</option>
+                  </select>
+                </div>
+                {/* Social Tone */}
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">Social</span>
+                  <select
+                    value={socialTone}
+                    onChange={(e) => setSocialTone(e.target.value)}
+                    aria-label="Select social tone"
+                    className="w-full px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  >
+                    <option value="punchy">Punchy & Viral</option>
+                    <option value="witty">Witty & Humorous</option>
+                    <option value="bold">Bold & Provocative</option>
+                    <option value="casual">Casual & Friendly</option>
+                    <option value="motivational">Motivational</option>
+                    <option value="informative">Informative</option>
+                  </select>
+                </div>
+                {/* Email Tone */}
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">Email</span>
+                  <select
+                    value={emailTone}
+                    onChange={(e) => setEmailTone(e.target.value)}
+                    aria-label="Select email tone"
+                    className="w-full px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  >
+                    <option value="formal">Formal & Corporate</option>
+                    <option value="friendly">Friendly & Warm</option>
+                    <option value="urgent">Urgent & Action-Driven</option>
+                    <option value="persuasive">Persuasive & Sales</option>
+                    <option value="newsletter">Newsletter Style</option>
+                    <option value="minimalist">Minimalist & Direct</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}

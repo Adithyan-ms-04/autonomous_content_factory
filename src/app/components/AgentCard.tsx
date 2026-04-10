@@ -1,6 +1,6 @@
 'use client';
 
-import { Brain, Pencil, Shield, CheckCircle } from 'lucide-react';
+import { Brain, Pencil, Shield, CheckCircle, Globe } from 'lucide-react';
 import type { AgentRole, AgentState } from '@/app/types';
 
 interface AgentCardProps {
@@ -43,6 +43,17 @@ const agentConfig = {
     shadow: 'shadow-xl shadow-amber-500/5 dark:shadow-amber-900/20',
     glowColor: 'bg-amber-500',
   },
+  scraper: {
+    name: 'URL Scraper',
+    description: 'Fetches & extracts web content',
+    icon: Globe,
+    bgColor: 'bg-white/80 dark:bg-cyan-950/30 backdrop-blur-xl',
+    iconBgColor: 'bg-gradient-to-br from-cyan-100 to-sky-100 dark:from-cyan-600/20 dark:to-sky-600/20',
+    textColor: 'text-cyan-700 dark:text-cyan-400',
+    borderColor: 'border-white/50 dark:border-cyan-900/30',
+    shadow: 'shadow-xl shadow-cyan-500/5 dark:shadow-cyan-900/20',
+    glowColor: 'bg-cyan-500',
+  },
 };
 
 const stateConfig: Record<AgentState, { label: string; animation: string }> = {
@@ -64,6 +75,9 @@ export function AgentCard({ role, state, currentTask }: AgentCardProps) {
 
   return (
     <div
+      role="status"
+      aria-label={`${config.name}: ${stateInfo.label}${currentTask ? ` — ${currentTask}` : ''}`}
+      aria-live="polite"
       className={`relative p-5 rounded-2xl border transition-all duration-500 overflow-hidden ${
         isActive ? 'scale-[1.02] -translate-y-1' : 'hover:scale-[1.01]'
       } ${
@@ -79,7 +93,7 @@ export function AgentCard({ role, state, currentTask }: AgentCardProps) {
 
       <div className="relative z-10 flex items-start gap-4">
         <div className={`p-3.5 rounded-xl flex items-center justify-center ${config.iconBgColor} ${config.textColor} shadow-inner`}>
-          <Icon className="w-6 h-6" />
+          <Icon className="w-6 h-6" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0 pt-0.5">
           <h3 className="font-bold text-gray-900 dark:text-gray-100 tracking-tight">

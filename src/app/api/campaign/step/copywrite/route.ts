@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getWorkflow, updateWorkflowStep, setCampaignOutput, addAgentMessage, updateAgentStatus } from '@/app/lib/store';
+import { getWorkflow, updateWorkflowStep, setCampaignOutput, addAgentMessage, updateAgentStatus, getWorkflowTones } from '@/app/lib/store';
 import { generateContent } from '@/app/agents/copywriter';
 
 export async function POST(request: NextRequest) {
@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
     });
 
     try {
-      const { campaign, messages } = await generateContent(workflow.factSheet);
+      const tones = getWorkflowTones(workflowId);
+      const { campaign, messages } = await generateContent(workflow.factSheet, tones, workflow.language);
       for (const msg of messages) await addAgentMessage(workflowId, msg);
 
       await setCampaignOutput(workflowId, campaign);
