@@ -55,8 +55,8 @@ An AI-powered multi-agent platform that transforms raw source material (articles
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Adithyan-ms-04/content-factory.git
-cd content-factory
+git clone https://github.com/Adithyan-ms-04/autonomous_content_factory.git
+cd autonomous_content_factory
 ```
 
 ### 2. Install dependencies
