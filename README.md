@@ -9,14 +9,15 @@ An AI-powered multi-agent platform that transforms raw source material (articles
 ## Features
 
 ### Core
-- **Multi-Agent Architecture** — Four specialized AI agents (Scraper, Researcher, Copywriter, Editor) collaborate autonomously.
+- **Multi-Agent Architecture** — Three specialized AI agents (Researcher, Copywriter, Editor) collaborate autonomously.
+- **URL Scraping Utility** — Automated preprocessing step that extracts clean content from reference URLs.
 - **Intelligent Content Validation** — LLM-powered gate prevents gibberish/spam from triggering expensive workflows.
 - **Real-Time Dashboard** — Live agent status tracking, chat logs, and campaign overview with SSE + polling fallback.
 - **Content Studio** — View, review, inline-edit, and regenerate individual content pieces with correction notes.
 - **Export Center** — Download approved content or post directly to X / compose in Gmail.
 
 ### Advanced
-- **URL Scraping Agent** — Provide a URL and the scraper agent fetches, cleans, and extracts the main content before the research phase begins.
+- **Automated URL Scraping** — Provide a URL and the system fetches, cleans, and extracts the main content before the research phase begins.
 - **Multi-Language Support** — Generate content in 10 languages: English, Spanish, French, German, Italian, Portuguese, Hindi, Japanese, Korean, and Chinese.
 - **Tone Selection** — Choose distinct tones for each content type before generation:
   - **Blog**: Professional, Conversational, Academic, Storytelling, Technical, Inspirational
@@ -128,7 +129,3 @@ content-factory/
 
 ---
 
-## License
-
-This project was built as part of the 2-Week AI Sprint.
-© 2026 Adithyan M S. All rights reserved.

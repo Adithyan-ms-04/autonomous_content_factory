@@ -6,26 +6,35 @@
 
 ## 1. Solution Design
 
-The Autonomous Content Factory is a **multi-agent AI system** that converts raw source material into a complete, multi-channel marketing campaign. The core idea is to replicate a real-world content marketing team using four specialized AI agents that communicate and collaborate autonomously:
+The Autonomous Content Factory is a **multi-agent orchestration system** that converts raw source material into a complete, multi-channel marketing campaign. The architecture consists of a robust preprocessing layer followed by three specialized AI agents that collaborate to ensure quality and accuracy.
 
-| Agent | Role | Responsibility |
+### Core Agent Team
+
+| Agent | Responsibility | Key Action |
 |---|---|---|
-| **Scraper** | Web Extraction | When a URL is provided, fetches the page, strips HTML boilerplate (nav, ads, footers), and uses LLM to extract the main article content. Runs as an optional Step 0 before research. |
-| **Researcher** | Fact Extraction | Parses raw input to produce a structured Fact Sheet (core features, technical specs, target audience, value proposition, ambiguous statements). |
-| **Copywriter** | Content Generation | Consumes the Fact Sheet and generates three content formats: a long-form Blog Post, a punchy Social Media Thread, and a concise Email Teaser. Respects user-selected tones and output language. |
-| **Editor** | Quality Assurance | Reviews every piece against the original Fact Sheet for accuracy, tone, and completeness. Rejects sub-standard pieces with actionable correction notes, triggering automatic regeneration. |
+| **Researcher** | Fact Extraction | Parses raw input to produce a structured "Fact Sheet" (features, specs, audience, value prop). |
+| **Copywriter** | Content Generation | Consumes the Fact Sheet to generate a long-form Blog Post, Social Media Thread, and Email Teaser. |
+| **Editor** | Quality Assurance | Reviews content against the Fact Sheet. Rejects sub-standard drafts with correction notes for auto-regeneration. |
+
+### Preprocessing Layer
+- **URL Scraper**: An automated utility that fetches web pages, strips boilerplate (nav, ads, footers), and extracts the main article content. This runs as an optional Step 0 to prepare the source material for the Researcher.
 
 ### Workflow Pipeline
 
-```
-URL (optional) → Scraper → Researcher → Copywriter → Editor → Dashboard
-                                ↑              ↓
-                                └── Rejected ──┘ (auto-loop, max 5 retries)
+```mermaid
+graph TD
+  A[Input: Text/URL] --> B{URL?}
+  B -->|Yes| C[URL Scraper Utility]
+  B -->|No| D[Researcher Agent]
+  C --> D
+  D --> E[Fact Sheet]
+  E --> F[Copywriter Agent]
+  F -->|Drafts| G[Editor Agent]
+  G -->|Approved| H[Dashboard: Analytics & Export]
+  G -->|Rejected| F
 ```
 
-The workflow is fully automated: once the user submits source material, the agents execute sequentially (Scrape → Research → Copywrite → Review), with an automatic feedback loop where rejected content is regenerated up to 5 times. The frontend uses **Server-Sent Events (SSE)** for real-time updates, with an automatic polling fallback.
-
-An **LLM-powered content validation gate** at the API entry-point prevents meaningless or gibberish input from triggering the expensive multi-step workflow.
+The workflow is fully sequential with an automatic feedback loop. If the Editor rejects a piece, the Copywriter regenerates it (up to 5 times) using the Editor’s specific feedback, ensuring the final output meets all quality standards.
 
 ---
 
@@ -33,64 +42,40 @@ An **LLM-powered content validation gate** at the API entry-point prevents meani
 
 | Choice | Why |
 |---|---|
-| **Next.js 16 (App Router)** | Unified full-stack framework — API routes and frontend in one codebase. Server Components and the App Router simplify data fetching and layout composition. |
-| **TypeScript** | Strong typing across agents, API contracts, and UI components catches errors at compile time and improves maintainability. |
-| **Vercel AI SDK + Groq** | The AI SDK provides a clean `generateText` / `generateObject` abstraction. Groq delivers extremely fast inference on open-weight models, keeping the entire workflow under 60 seconds. |
-| **SQLite + Prisma** | Zero-config local database. Prisma provides type-safe queries and easy schema migrations. SQLite is ideal for a self-contained demo that runs anywhere without external database setup. |
-| **Tailwind CSS 4** | Utility-first styling enables rapid, consistent UI development with dark mode, responsive layouts, and custom animations without writing verbose CSS. |
+| **Next.js 16 (App Router)** | Unified full-stack framework with built-in API routes and server-side optimizations. |
+| **TypeScript** | Strong typing across agents and API contracts ensures a maintainable and bug-free pipeline. |
+| **Vercel AI SDK + Groq** | Provides high-speed LLaMA-based inference, keeping the multi-step generation under 60 seconds. |
+| **SQLite + Prisma** | Lightweight, zero-config local database. Ideal for a self-contained, high-performance demo. |
+| **Tailwind CSS 4** | Advanced design tokens and utility classes for a premium, responsive "glassmorphism" UI. |
 
 ---
 
 ## 3. Key Features Implemented
 
-### Core Platform
-- Multi-agent orchestration with real-time dashboard and live agent chat logs
-- Three distinct content outputs: Blog Post, Social Thread, Email Teaser
-- Automated quality-control feedback loop (Editor → Copywriter regeneration)
-- Content preview with realistic mockups (blog layout, X/Twitter thread, email)
-- Export Center with direct "Post on X" / "Compose in Gmail" integration
-- LLM-powered input validation to block spam/gibberish before workflow starts
-- Drag-and-drop file upload support (.txt, .md, .html)
-- Campaign history dashboard to browse and resume past campaigns
+### Workflow & Control
+- **Intelligent Pre-Validation**: LLM-powered gate blocks low-quality/gibberish input before processing.
+- **Tone Customization**: Pre-select 6 distinct tones for each platform (Blog, Social, Email) before starting the campaign.
+- **Multi-Language Support**: Complete pipeline support for 10 languages (English, Spanish, French, German, Italian, Portuguese, Hindi, Japanese, Korean, Chinese).
+- **Inline Editor**: Fully-featured manual text editor within the studio for fine-tuning approved drafts.
 
-### Advanced Features
-- **URL Scraping Agent** — Fetches web page content, strips boilerplate, and uses LLM to extract the main article when a reference URL is provided.
-- **Multi-Language Support** — 10 languages (English, Spanish, French, German, Italian, Portuguese, Hindi, Japanese, Korean, Chinese). Language instruction is injected into copywriter prompts and preserved across content regeneration.
-- **Tone Selection** — Users choose distinct tones per content type (6 options each for Blog, Social, and Email) before campaign generation. Tones are passed directly to the copywriter agent's prompt builder.
-- **Content Analytics Dashboard** — Computes reading level (grade), word count, estimated read time, and extracts top SEO keywords for each content piece.
-- **Inline Content Editor** — Edit generated content directly within the Content Studio using a raw text editor with Save/Cancel controls.
-- **Browser Notifications** — Desktop notification fires when campaign completes while the tab is in the background (uses the Notifications API with user permission).
+### User Interface & Experience
+- **Live Logs**: Compact, status-coded communication feed (🟢 Approved, 🔴 Rejected, 🟡 Creating, 🟠 Reviewing).
+- **Analytics Dashboard**: Real-time metrics including reading grade level, word count, estimated read time, and SEO keyword extraction.
+- **Advanced Export**: Export the full campaign as a **Styled HTML** page (print-ready) or a **ZIP Archive** with individual text files.
+- **Browser Notifications**: Native alerts fire when a campaign finishes, even if the tab is in the background.
 
-### Security & Architecture
-- In-memory sliding window rate limiting (10 requests/minute per IP)
-- Request body size validation (500 KB cap)
-- Prisma singleton pattern to prevent connection exhaustion
-- ARIA roles, labels, and keyboard navigation for accessibility
-- Next.js App Router error and loading boundaries
+### Architecture Decisions
+- **In-Memory Store**: Language and tone settings are persisted in a high-speed in-memory map to ensure they survive the regeneration loops without complex DB schema changes.
+- **SSE + Polling**: Real-time dashboard updates use Server-Sent Events with a 2-second polling fallback for maximum reliability.
 
 ---
 
-## 4. Architecture Decisions
+## 4. What I Would Improve With More Time
 
-### Language & Tone Persistence
-Language and tone selections are stored in an **in-memory map** alongside the Prisma database. This avoids requiring a database migration while ensuring these values persist for the duration of a campaign's lifecycle. The tradeoff is that these values are lost on server restart, which is acceptable for a demo/development context.
-
-### SSE with Polling Fallback
-Real-time updates use Server-Sent Events (SSE) via `/api/campaign/stream`, with an automatic fallback to 2-second polling if the SSE connection drops. This ensures reliable updates across all environments.
-
-### Scraper as Optional Step
-The URL scraper runs as a non-blocking Step 0. If scraping fails (CORS, network error, etc.), the pipeline gracefully falls back to using the user's pasted content directly.
+- **Streaming responses** — Token-by-token output for a more "alive" generation feel.
+- **User authentication** — Secure accounts for managing multiple independent campaign histories.
+- **Production Deployment** — Migration to PostgreSQL and Vercel for public-facing availability.
+- **PDF Export** — Direct-to-PDF generation for the Export Center.
 
 ---
 
-## 5. What I Would Improve With More Time
-
-- **Streaming responses** — Use the AI SDK's streaming capabilities to show content being generated token-by-token in the UI.
-- **PDF Export** — Add a "Download as PDF" option in the Export Center using `jspdf` or `@react-pdf/renderer`.
-- **User authentication** — Add login/signup so multiple users can manage their own campaigns independently.
-- **Deployment to production** — Migrate from SQLite to PostgreSQL and deploy on Vercel or a similar platform for public access.
-- **Persistent language/tone storage** — Add `language` and `tones` columns to the Prisma schema so these values survive server restarts.
-
----
-
-© 2026 Adithyan M S
