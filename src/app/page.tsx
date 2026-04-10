@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { UploadZone } from '@/app/components/UploadZone';
+import { CampaignHistory } from '@/app/components/CampaignHistory';
 import { CampaignView } from '@/app/components/CampaignView';
 import { AgentRoom } from '@/app/components/AgentRoom';
 import { ChatFeed } from '@/app/components/ChatFeed';
@@ -18,6 +19,46 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'chat' | 'content' | 'export'>('overview');
+  const [pastCampaigns, setPastCampaigns] = useState<any[]>([]);
+  const [resumingId, setResumingId] = useState<string | null>(null);
+
+  // Fetch past campaigns on mount
+  useEffect(() => {
+    fetch('/api/campaign/list')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setPastCampaigns(Array.isArray(data) ? data : []))
+      .catch(() => setPastCampaigns([]));
+  }, []);
+
+  // Resume a past campaign
+  const handleResume = async (campaignId: string) => {
+    try {
+      setResumingId(campaignId);
+      const res = await fetch(`/api/campaign?id=${campaignId}`);
+      if (!res.ok) throw new Error('Failed to load campaign');
+      const data = await res.json();
+      setWorkflow(data);
+    } catch (err) {
+      alert('Could not load that campaign. It may have been corrupted.');
+    } finally {
+      setResumingId(null);
+    }
+  };
+
+  // Clear all campaign history
+  const handleClearHistory = async () => {
+    if (!confirm('Are you sure you want to delete all campaign history? This cannot be undone.')) return;
+    try {
+      const res = await fetch('/api/campaign/clear', { method: 'DELETE' });
+      if (res.ok) {
+        setPastCampaigns([]);
+      } else {
+        alert('Failed to clear history.');
+      }
+    } catch {
+      alert('Failed to clear history.');
+    }
+  };
 
   // Relying entirely on setInterval polling in handleUpload for updates
 
@@ -219,6 +260,12 @@ export default function Home() {
               {error}
             </div>
           )}
+          <CampaignHistory
+            campaigns={pastCampaigns}
+            onResume={handleResume}
+            onClear={handleClearHistory}
+            isLoadingId={resumingId}
+          />
         </div>
       </main>
     );
