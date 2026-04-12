@@ -107,21 +107,21 @@ export async function setWorkflow(workflow: CampaignWorkflow): Promise<void> {
           currentTask: s.currentTask,
         }))
       }
-    },
+    } as any,
   });
 }
 
 export async function setWorkflowLanguage(workflowId: string, language: string): Promise<void> {
   await prisma.campaignWorkflow.update({
     where: { id: workflowId },
-    data: { language },
+    data: { language } as any,
   });
 }
 
 export async function setWorkflowTones(workflowId: string, tones: { blog: string; social: string; email: string }): Promise<void> {
   await prisma.campaignWorkflow.update({
     where: { id: workflowId },
-    data: { tones: JSON.stringify(tones) },
+    data: { tones: JSON.stringify(tones) } as any,
   });
 }
 

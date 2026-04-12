@@ -71,6 +71,8 @@ export interface CampaignWorkflow {
   tags?: string[];
   // Feature 8: Multi-language
   language?: string;
+  // Feature 9: Content Tones
+  tones?: ToneConfig;
 }
 
 export interface ToneConfig {
