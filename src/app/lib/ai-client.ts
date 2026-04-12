@@ -6,7 +6,7 @@ export const AI_MODEL = 'openai/gpt-oss-120b';
 
 // Initialize the groq provider
 const groq = createGroq({
-  apiKey: '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',
+  apiKey: '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',
 });
 
 // Standard text generation wrapper

@@ -16,6 +16,8 @@ model CampaignWorkflow {
   agentStatuses    AgentStatus[]
   messages         AgentMessage[]
   currentStep      String          // 'upload' | 'research' | 'copywrite' | 'review' | 'complete'
+  language         String          @default("en")
+  tones            String?         // JSON stringified object { blog, social, email }
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 }

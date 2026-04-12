@@ -3,25 +3,7 @@ import { prisma } from './prisma';
 import type { CampaignWorkflow, AgentMessage, AgentStatus, SourceDocument, FactSheet, CampaignOutput, ContentPiece } from '@/app/types';
 import { generateId } from './utils';
 
-// In-memory store for language (not in Prisma schema)
-const languageMap = new Map<string, string>();
-const tonesMap = new Map<string, { blog: string; social: string; email: string }>();
-
-export function setWorkflowLanguage(workflowId: string, language: string) {
-  languageMap.set(workflowId, language);
-}
-
-export function getWorkflowLanguage(workflowId: string): string {
-  return languageMap.get(workflowId) || 'en';
-}
-
-export function setWorkflowTones(workflowId: string, tones: { blog: string; social: string; email: string }) {
-  tonesMap.set(workflowId, tones);
-}
-
-export function getWorkflowTones(workflowId: string): { blog: string; social: string; email: string } {
-  return tonesMap.get(workflowId) || { blog: 'professional', social: 'punchy', email: 'formal' };
-}
+// No in-memory store needed for language anymore as it's in Prisma
 
 // Helper to map Prisma models to our TS interfaces
 function mapPrismaToWorkflow(prismaWorkflow: any): CampaignWorkflow | undefined {
@@ -82,7 +64,8 @@ function mapPrismaToWorkflow(prismaWorkflow: any): CampaignWorkflow | undefined 
       type: m.type,
     })),
     currentStep: prismaWorkflow.currentStep as any,
-    language: languageMap.get(prismaWorkflow.id) || 'en',
+    language: prismaWorkflow.language || 'en',
+    tones: prismaWorkflow.tones ? JSON.parse(prismaWorkflow.tones) : { blog: 'professional', social: 'punchy', email: 'formal' },
     createdAt: prismaWorkflow.createdAt,
     updatedAt: prismaWorkflow.updatedAt,
   };
@@ -107,6 +90,8 @@ export async function setWorkflow(workflow: CampaignWorkflow): Promise<void> {
     data: {
       id: workflow.id,
       currentStep: workflow.currentStep,
+      language: workflow.language,
+      tones: workflow.tones ? JSON.stringify(workflow.tones) : undefined,
       sourceDocument: {
         create: {
           id: workflow.sourceDocument.id,
@@ -123,6 +108,20 @@ export async function setWorkflow(workflow: CampaignWorkflow): Promise<void> {
         }))
       }
     },
+  });
+}
+
+export async function setWorkflowLanguage(workflowId: string, language: string): Promise<void> {
+  await prisma.campaignWorkflow.update({
+    where: { id: workflowId },
+    data: { language },
+  });
+}
+
+export async function setWorkflowTones(workflowId: string, tones: { blog: string; social: string; email: string }): Promise<void> {
+  await prisma.campaignWorkflow.update({
+    where: { id: workflowId },
+    data: { tones: JSON.stringify(tones) },
   });
 }
 
